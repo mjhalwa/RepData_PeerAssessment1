@@ -3,11 +3,27 @@ title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
+    toc: true
 ---
 
 
 ## Loading and preprocessing the data
 
+Data is unzipped and loaded:
+```{r load data}
+unzip("activity.zip")
+data <- read.csv("activity.csv")
+```
+
+Leaving the 2 integer columns of *steps* and *interval* as is, the *date* column is converted to date-type:
+```{r preprocess data}
+data <- transform(data, date=as.Date(date))
+```
+
+An impression on the data is shown here:
+```{r data impression}
+str(data)
+```
 
 
 ## What is mean total number of steps taken per day?
