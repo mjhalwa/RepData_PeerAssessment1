@@ -6,6 +6,14 @@ output:
     toc: true
 ---
 
+Load general libraries:
+```{r libraries, results="hide"}
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(lattice)
+```
+
 
 ## Loading and preprocessing the data
 
@@ -40,9 +48,8 @@ stepsData <- with(data, aggregate(steps ~ date, FUN=sum, na.rm=TRUE))
 
 The steps per day can be visualized in a histogram.
 ```{r steps per day histogram}
-library(ggplot2)
 g <- ggplot(stepsData, aes(x=steps))
-g + geom_histogram(origin=0, binwidth=1000, colour="darkred", fill="white") +
+g + geom_histogram(boundary=0, binwidth=1000, colour="darkred", fill="white") +
     scale_y_continuous(breaks=seq(0,15,by=2), limits=c(0,10)) +
     scale_x_continuous(breaks=seq(0,25000,5000), limits=c(0,25000), minor_breaks=seq(0,25000,1000)) +
     xlab("steps per day") +
@@ -79,7 +86,71 @@ max.avgsteps <- avgsteps[avgsteps$steps==max(avgsteps$steps),]
 The **maximum** of about **`r round(max.avgsteps$steps,digits=2)`** average steps is in the interval **`r max.avgsteps$interval`**.
 
 ## Imputing missing values
+First calculate how many `NA` are in the data set
+```{r calculate number of missing rows}
+missing.rows <- sum(is.na(data$steps))
+```
 
+There are **`r missing.rows` rows** with missing values in the dataset.
 
+Now we exchange the missing values with the average of their 5-minute interval from the last chapter:
+```{r replace missing values}
+temp <- rename(avgsteps, avsteps=steps)
+tempData <- left_join(data, temp, by="interval")
+na.rows <- is.na(data$steps)
+newData <- data
+newData$steps[na.rows] <- tempData$avsteps[na.rows]
+```
+
+Repeat the first evaluation for the new data set with replaced missing values:
+```{r repeat chaper 2 evaluation}
+# total steps per day
+new.stepsData <- with(newData, aggregate(steps ~ date, FUN=sum, na.rm=TRUE))
+
+# histogram
+g <- ggplot(new.stepsData, aes(x=steps))
+g + geom_histogram(boundary=0, binwidth=1000, colour="darkred", fill="white") +
+    scale_y_continuous(breaks=seq(0,18,by=2), limits=c(0,18)) +
+    scale_x_continuous(breaks=seq(0,25000,5000), limits=c(0,25000), minor_breaks=seq(0,25000,1000)) +
+    xlab("steps per day") +
+    ylab("days")
+
+# mean and median
+new.steps.mean <- mean(new.stepsData$steps)
+new.steps.median <- median(new.stepsData$steps)
+```
+
+The new rounded **mean** is **`r options(scipen=999);round(new.steps.mean, digits=8)`**  
+and the new rounded **median** is **`r round(new.steps.median,digits=8)`**
+
+### Comparing this result to the first part of the assignment
+Replacing missing data with this method solely shows an increase in one bar, which corresponds to the mean steps per day. All other bars remain the same height. Furthermore the rounded mean and median do equal now.  
+The replacement of missing values with average values seems to affect only the average part or the results.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+Finally we compare the activity between weekendays and weekends. Therefore we add a factor variable indicating two groups:
+```{r separate weekdays from weekends}
+finalData <- mutate(newData, weekday=weekdays(date))
+finalData <- mutate(finalData, weektime=weekdays(date) %in% c("Samstag","Sonntag"))
+finalData <- transform(finalData, weektime=as.factor(weektime))
+finalData$weektime <- with(finalData, revalue(weektime, c("TRUE"="weekend", "FALSE"="weekday")))
+```
+
+
+Finally a plot compares weekday's and weekend's activity:
+```{r plot comparing weekday and weekend,fig.height=7.5}
+final.avgsteps <- with(finalData, aggregate(steps ~ interval+weektime, FUN=mean, na.rm=TRUE))
+
+xyplot(steps ~ interval | weektime, data=final.avgsteps, type="l",
+       layout=c(1,2), xlab="Interval", ylab="Number of steps")
+```
+
+```{r other plots, echo=FALSE}
+#par(mfrow = c(2,1))
+#with(subset(final.avgsteps, weektime=="weekend"), plot(x=interval, y=steps, type="l", col="blue"))
+#with(subset(final.avgsteps, weektime=="weekday"), plot(x=interval, y=steps, type="l", col="blue"))
+
+#g <- ggplot(final.avgsteps, aes(x=interval, y=steps))
+#g + geom_line(col="blue") + ylab("average steps per interval") +
+#    facet_grid(weektime ~ .)
+```
