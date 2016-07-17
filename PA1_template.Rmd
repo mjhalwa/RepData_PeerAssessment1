@@ -62,8 +62,8 @@ steps.mean <- mean(stepsData$steps)
 steps.median <- median(stepsData$steps)
 ```
 
-The rounded **mean** is **`r options(scipen=999);round(steps.mean, digits=2)`**  
-The **median** is **`r steps.median`**
+The rounded **mean** steps taken each day are: **`r options(scipen=999);round(steps.mean, digits=2)`**  
+The **median** steps taken each day are: **`r steps.median`**
 
 
 ## What is the average daily activity pattern?
@@ -120,8 +120,8 @@ new.steps.mean <- mean(new.stepsData$steps)
 new.steps.median <- median(new.stepsData$steps)
 ```
 
-The new rounded **mean** is **`r options(scipen=999);round(new.steps.mean, digits=8)`**  
-and the new rounded **median** is **`r round(new.steps.median,digits=8)`**
+The new rounded **mean** steps taken each day are: **`r options(scipen=999);round(new.steps.mean, digits=2)`**  
+and the new rounded **median** steps taken each day are: **`r round(new.steps.median,digits=2)`**
 
 ### Comparing this result to the first part of the assignment
 Replacing missing data with this method solely shows an increase in one bar, which corresponds to the mean steps per day. All other bars remain the same height. Furthermore the rounded mean and median do equal now.  
