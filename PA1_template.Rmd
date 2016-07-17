@@ -27,7 +27,36 @@ str(data)
 
 
 ## What is mean total number of steps taken per day?
+First calculate the steps per day, removing all `NA` values with option `na.rm=TRUE`. Additionally data is converted to a `data.frame` which is easier to process with ggplot2.
+```{r steps per day calc}
+steps.per.day <- with(data, tapply(steps, INDEX=date, sum, na.rm=TRUE))
+stepsData <- data.frame(steps=steps.per.day, date=as.Date(names(steps.per.day)))
+```
 
+This can also be done in just one function call (which in addition to the previous approach dismisses the zeros as well):
+```{r}
+stepsData <- with(data, aggregate(steps ~ date, FUN=sum, na.rm=TRUE))
+```
+
+The steps per day can be visualized in a histogram.
+```{r steps per day histogram}
+library(ggplot2)
+g <- ggplot(stepsData, aes(x=steps))
+g + geom_histogram(origin=0, binwidth=1000, colour="darkred", fill="white") +
+    scale_y_continuous(breaks=seq(0,15,by=2), limits=c(0,10)) +
+    scale_x_continuous(breaks=seq(0,25000,5000), limits=c(0,25000), minor_breaks=seq(0,25000,1000)) +
+    xlab("steps per day") +
+    ylab("days")
+```
+
+Median and mean are calculated by:
+```{r median and mean steps per day calc}
+steps.mean <- mean(stepsData$steps)
+steps.median <- median(stepsData$steps)
+```
+
+The rounded **mean** is **`r options(scipen=999);round(steps.mean, digits=2)`**  
+The **median** is **`r steps.median`**
 
 
 ## What is the average daily activity pattern?
