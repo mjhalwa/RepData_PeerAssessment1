@@ -60,8 +60,23 @@ The **median** is **`r steps.median`**
 
 
 ## What is the average daily activity pattern?
+First calculate the average steps within each interval.
+```{r calc interval activity}
+avgsteps <- with(data, aggregate(steps ~ interval, FUN=mean, na.rm=TRUE))
+```
 
+A time series plot of this data visualizes the average daily activity.
+```{r time series plot of steps}
+g <- ggplot(avgsteps, aes(x=interval, y=steps))
+g + geom_line() + ylab("average steps per interval")
+```
 
+The graphic shows a maximum which can be computed by:
+```{r compute maximum}
+max.avgsteps <- avgsteps[avgsteps$steps==max(avgsteps$steps),]
+```
+
+The **maximum** of about **`r round(max.avgsteps$steps,digits=2)`** average steps is in the interval **`r max.avgsteps$interval`**.
 
 ## Imputing missing values
 
